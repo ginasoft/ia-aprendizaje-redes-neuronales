@@ -1,6 +1,11 @@
+import os, warnings
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"       
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"     
+warnings.filterwarnings("ignore", category=UserWarning)
+
 import numpy as np
 from keras.models import Sequential
-from keras.layers.core import Dense
+from keras.layers import Dense
 
 xor = [
     (0, 0, 0),
@@ -9,25 +14,26 @@ xor = [
     (1, 1, 0)
 ]
 
-train_data = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], "float32")
-target_data = np.array([[0], [1], [1], [0]], "float32")
+train_data = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype="float32")
+target_data = np.array([[0], [1], [1], [0]], dtype="float32")
 
 model = Sequential()
 model.add(Dense(16, input_dim=2, activation='relu'))
 model.add(Dense(1, activation='sigmoid'))
 
 model.compile(
-    loss='mean_squared_error',
+    loss='binary_crossentropy',
     optimizer='adam',
-    metrics=['binary_accuracy']
+    metrics=['accuracy']
 )
 
 print(model.summary())
 
-model.fit(train_data, target_data, epochs=10000)
+model.fit(train_data, target_data, epochs=1000, verbose=1)
 
-scores = model.evaluate(train_data, target_data)
-print(scores)
+loss, acc = model.evaluate(train_data, target_data, verbose=0)
+print("loss:", round(loss, 6), "acc:", round(acc, 3))
 
+pred = model.predict(train_data)
 print("*" * 50)
-print(model.predict(train_data))
+print(np.round(pred, 3))
